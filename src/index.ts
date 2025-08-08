@@ -174,6 +174,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case "get_service_token": {
+        if (!args?.service) {
+          throw new Error("Service parameter is required");
+        }
         const token = await authManager.getServiceToken(args.service as string);
         return {
           content: [
@@ -198,6 +201,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case "copy_session": {
+        if (!args?.fromService || !args?.toService) {
+          throw new Error("Both fromService and toService parameters are required");
+        }
         const result = await authManager.copySession(
           args.fromService as string,
           args.toService as string

@@ -4,12 +4,11 @@
  */
 
 import { chromium, Browser, Page, Cookie } from "playwright";
-import { CookieJar } from "tough-cookie";
 import { promises as fs } from "fs";
 import path from "path";
 import os from "os";
 import { logger } from "./utils/logger.js";
-import { ServiceConfig, SERVICE_CONFIGS } from "./service-registry.js";
+import { SERVICE_CONFIGS } from "./service-registry.js";
 
 export interface AuthResult {
   success: boolean;
@@ -35,14 +34,12 @@ export interface AuthStatus {
 }
 
 export class AuthManager {
-  private cookieJar: CookieJar;
   private browser: Browser | null = null;
   private authDir: string;
   private oktaCookieFile: string;
   private serviceCookieDir: string;
 
   constructor() {
-    this.cookieJar = new CookieJar();
     this.authDir = path.join(os.homedir(), ".mcp-auth");
     this.oktaCookieFile = path.join(this.authDir, "okta-cookies.json");
     this.serviceCookieDir = path.join(this.authDir, "services");
@@ -136,8 +133,8 @@ export class AuthManager {
         }
 
         // Wait for successful authentication
-        await page.waitForFunction(
-          () => !window.location.href.includes("signin"),
+        await page.waitForURL(
+          (url) => !url.href.includes("signin"),
           { timeout: 120000 }
         );
       }
@@ -289,7 +286,7 @@ export class AuthManager {
     };
   }
 
-  async copySession(fromService: string, toService: string): Promise<AuthResult> {
+  async copySession(_fromService: string, toService: string): Promise<AuthResult> {
     // Load Okta cookies
     const oktaCookies = await this.loadOktaCookies();
     if (!oktaCookies) {
